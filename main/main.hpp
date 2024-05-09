@@ -28,10 +28,14 @@ class Application {
         bool getConfig(const char* root);   // SDカード内の./configファイル読み込み。結果はconfigMapに格納。
         void wifiConnection();              // Wi-Fi接続
         void wifiDisconnection();           // Wi-Fi切断
+        // OTA
+        void ota();
+        static void checkOTA(void* arg);
 
     private:
         int m_LedState;
         TaskHandle_t m_xHandle; // タスクハンドル
+        TaskHandle_t m_xHandleOTA;  // OTAタスクハンドル
         QueueHandle_t m_xQueue; // メッセージキュー
         SDCard m_sd_card;   // SDカード
         WiFi m_wifi;        // Wi-Fi
