@@ -1,0 +1,29 @@
+menu "OTA Test Example"
+    config LED_PIN
+        int "LED GPIO number"
+        default 5
+
+    menu "SD card PIN configuration"
+    
+        config MOSI_PIN
+            int "MOSI GPIO number"
+            default 17
+        
+        config MISO_PIN
+            int "MOSO GPIO number"
+            default 19
+
+        config CLK_PIN
+            int "CLK GPIO number"
+            default 18
+
+        config CS_PIN
+            int "CS GPIO number"
+            default 16
+
+        config CARD_SW_PIN
+            int "SD card sw GPIO number"
+            default 4
+    endmenu
+
+endmenu
