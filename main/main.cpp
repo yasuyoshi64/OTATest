@@ -193,16 +193,6 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-static void infinite_loop(void)
-{
-    int i = 0;
-    ESP_LOGI(TAG, "When a new firmware is available on the server, press the reset button to download it");
-    while(1) {
-        ESP_LOGI(TAG, "Waiting for a new firmware ... %d", ++i);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
-    }
-}
-
 // アップデートチェック
 void Application::checkOTA(void* arg) {
     Application *pThis = (Application*)arg;
@@ -219,6 +209,7 @@ void Application::checkOTA(void* arg) {
     esp_http_client_config_t config = {
         .url = updateuri,
         // .cert_pem = (char*)ca_cert_pem_start,
+        .disable_auto_redirect = false,
         .event_handler = _http_event_handler,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .keep_alive_enable = true,
@@ -253,10 +244,21 @@ void Application::checkOTA(void* arg) {
         ESP_LOGE(TAG, "update partition NULL");
         ESP_ERROR_CHECK(ESP_FAIL);
     }
+
     int binary_file_length = 0;
     bool image_header_was_checked = false;
     while(1) {
         int data_read = esp_http_client_read(client, ota_write_data, BUFFSIZE);
+        int http_status = esp_http_client_get_status_code(client);
+        ESP_LOGI(TAG, "data_read=%d", data_read);
+        ESP_LOGI(TAG, "http_status=%d", http_status);
+        if (http_status == 302) {
+            // リダイレクト
+            esp_http_client_set_redirection(client);
+            ESP_ERROR_CHECK(esp_http_client_open(client, 0));
+            esp_http_client_fetch_headers(client);
+            continue;
+        }
         if (data_read < 0) {
             ESP_LOGE(TAG, "Error: SSL data read error");
             esp_http_client_close(client);
@@ -287,7 +289,7 @@ void Application::checkOTA(void* arg) {
                             ESP_LOGW(TAG, "The firmware has been rolled back to the previous version.");
                             esp_http_client_close(client);
                             esp_http_client_cleanup(client);
-                            infinite_loop();
+                            return;
                         }
                     }
 
@@ -295,7 +297,7 @@ void Application::checkOTA(void* arg) {
                         ESP_LOGW(TAG, "Current running version is the same as a new. We will not continue the update.");
                         esp_http_client_close(client);
                         esp_http_client_cleanup(client);
-                        infinite_loop();
+                        return;
                     }
 
                     image_header_was_checked = true;
