@@ -28,9 +28,6 @@
 
 static char ota_write_data[BUFFSIZE + 1] = { 0 };
 
-// extern const uint8_t ca_cert_pem_start[] asm("_binary_ca_cert_pem_start");
-// extern const uint8_t ca_cert_pem_end[] asm("_binary_ca_cert_pem_end");
-
 Application app;
 
 // メッセージ種別 (メッセージキュー用)
@@ -162,55 +159,14 @@ void Application::ota() {
     xTaskCreate(Application::checkOTA, TAG, 8192, (void*)this, tskIDLE_PRIORITY, &m_xHandle);
 }
 
-// esp_err_t _http_event_handler(esp_http_client_event_t *evt)
-// {
-//     switch (evt->event_id) {
-//     case HTTP_EVENT_ERROR:
-//         ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
-//         break;
-//     case HTTP_EVENT_ON_CONNECTED:
-//         ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
-//         break;
-//     case HTTP_EVENT_HEADER_SENT:
-//         ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
-//         break;
-//     case HTTP_EVENT_ON_HEADER:
-//         ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
-//         break;
-//     case HTTP_EVENT_ON_DATA:
-//         ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-//         break;
-//     case HTTP_EVENT_ON_FINISH:
-//         ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
-//         break;
-//     case HTTP_EVENT_DISCONNECTED:
-//         ESP_LOGD(TAG, "HTTP_EVENT_DISCONNECTED");
-//         break;
-//     case HTTP_EVENT_REDIRECT:
-//         ESP_LOGD(TAG, "HTTP_EVENT_REDIRECT");
-//         break;
-//     }
-//     return ESP_OK;
-// }
-
 // アップデートチェック
 void Application::checkOTA(void* arg) {
     Application *pThis = (Application*)arg;
     const char* updateuri = pThis->m_configMap["updateuri"].c_str();
     ESP_LOGI(TAG, "update uri = %s", updateuri);
-    // ESP_LOGI(TAG, "ca_cert.pem\n%s", (const char*)ca_cert_pem_start);
     
-    esp_err_t err;
-    esp_ota_handle_t update_handle = 0 ;
-    const esp_partition_t *update_partition = NULL;
-    // const esp_partition_t *configured = esp_ota_get_boot_partition();
-    const esp_partition_t *running = esp_ota_get_running_partition();
-
     esp_http_client_config_t config = {
         .url = updateuri,
-        // .cert_pem = (char*)ca_cert_pem_start,
-        // .disable_auto_redirect = false,
-        // .event_handler = _http_event_handler,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .keep_alive_enable = true,
     };
@@ -231,6 +187,10 @@ void Application::checkOTA(void* arg) {
     // }
 
     // バージョンチェック有OTA
+    esp_err_t err;
+    esp_ota_handle_t update_handle = 0 ;
+    const esp_partition_t *update_partition = NULL;
+    const esp_partition_t *running = esp_ota_get_running_partition();
     esp_http_client_handle_t client = esp_http_client_init(&config);
     if (client == NULL) {
         ESP_LOGE(TAG, "Failed to initialise HTTP connection");
@@ -250,8 +210,6 @@ void Application::checkOTA(void* arg) {
     while(1) {
         int data_read = esp_http_client_read(client, ota_write_data, BUFFSIZE);
         int http_status = esp_http_client_get_status_code(client);
-        // ESP_LOGI(TAG, "data_read=%d", data_read);
-        // ESP_LOGI(TAG, "http_status=%d", http_status);
         if (http_status == 302) {
             // リダイレクト
             esp_http_client_set_redirection(client);
@@ -262,7 +220,7 @@ void Application::checkOTA(void* arg) {
         if (data_read < 0) {
             ESP_LOGE(TAG, "Error: SSL data read error");
             esp_http_client_close(client);
-            esp_http_client_cleanup(client);
+            esp_http_client_cleanup(client); 
         } else if (data_read > 0) {
             if (image_header_was_checked == false) {
                 esp_app_desc_t new_app_info;
@@ -384,6 +342,6 @@ extern "C" void app_main(void)
     while(1) {
         led_status = led_status == 0 ? 1 : 0;
         app.led(led_status);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
