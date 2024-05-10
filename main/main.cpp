@@ -289,7 +289,7 @@ void Application::checkOTA(void* arg) {
                             ESP_LOGW(TAG, "The firmware has been rolled back to the previous version.");
                             esp_http_client_close(client);
                             esp_http_client_cleanup(client);
-                            return;
+                            vTaskDelay(NULL);
                         }
                     }
 
@@ -297,7 +297,7 @@ void Application::checkOTA(void* arg) {
                         ESP_LOGW(TAG, "Current running version is the same as a new. We will not continue the update.");
                         esp_http_client_close(client);
                         esp_http_client_cleanup(client);
-                        return;
+                        vTaskDelay(NULL);
                     }
 
                     image_header_was_checked = true;
