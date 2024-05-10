@@ -162,36 +162,36 @@ void Application::ota() {
     xTaskCreate(Application::checkOTA, TAG, 8192, (void*)this, tskIDLE_PRIORITY, &m_xHandle);
 }
 
-esp_err_t _http_event_handler(esp_http_client_event_t *evt)
-{
-    switch (evt->event_id) {
-    case HTTP_EVENT_ERROR:
-        ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
-        break;
-    case HTTP_EVENT_ON_CONNECTED:
-        ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
-        break;
-    case HTTP_EVENT_HEADER_SENT:
-        ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
-        break;
-    case HTTP_EVENT_ON_HEADER:
-        ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
-        break;
-    case HTTP_EVENT_ON_DATA:
-        ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-        break;
-    case HTTP_EVENT_ON_FINISH:
-        ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
-        break;
-    case HTTP_EVENT_DISCONNECTED:
-        ESP_LOGD(TAG, "HTTP_EVENT_DISCONNECTED");
-        break;
-    case HTTP_EVENT_REDIRECT:
-        ESP_LOGD(TAG, "HTTP_EVENT_REDIRECT");
-        break;
-    }
-    return ESP_OK;
-}
+// esp_err_t _http_event_handler(esp_http_client_event_t *evt)
+// {
+//     switch (evt->event_id) {
+//     case HTTP_EVENT_ERROR:
+//         ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
+//         break;
+//     case HTTP_EVENT_ON_CONNECTED:
+//         ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
+//         break;
+//     case HTTP_EVENT_HEADER_SENT:
+//         ESP_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
+//         break;
+//     case HTTP_EVENT_ON_HEADER:
+//         ESP_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
+//         break;
+//     case HTTP_EVENT_ON_DATA:
+//         ESP_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+//         break;
+//     case HTTP_EVENT_ON_FINISH:
+//         ESP_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
+//         break;
+//     case HTTP_EVENT_DISCONNECTED:
+//         ESP_LOGD(TAG, "HTTP_EVENT_DISCONNECTED");
+//         break;
+//     case HTTP_EVENT_REDIRECT:
+//         ESP_LOGD(TAG, "HTTP_EVENT_REDIRECT");
+//         break;
+//     }
+//     return ESP_OK;
+// }
 
 // アップデートチェック
 void Application::checkOTA(void* arg) {
@@ -203,14 +203,14 @@ void Application::checkOTA(void* arg) {
     esp_err_t err;
     esp_ota_handle_t update_handle = 0 ;
     const esp_partition_t *update_partition = NULL;
-    const esp_partition_t *configured = esp_ota_get_boot_partition();
+    // const esp_partition_t *configured = esp_ota_get_boot_partition();
     const esp_partition_t *running = esp_ota_get_running_partition();
 
     esp_http_client_config_t config = {
         .url = updateuri,
         // .cert_pem = (char*)ca_cert_pem_start,
-        .disable_auto_redirect = false,
-        .event_handler = _http_event_handler,
+        // .disable_auto_redirect = false,
+        // .event_handler = _http_event_handler,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .keep_alive_enable = true,
     };
@@ -379,4 +379,11 @@ extern "C" void app_main(void)
     }
 
     app.init();
+
+    int led_status = 0;
+    while(1) {
+        led_status = led_status == 0 ? 1 : 0;
+        app.led(led_status);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
 }
