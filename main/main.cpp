@@ -250,8 +250,8 @@ void Application::checkOTA(void* arg) {
     while(1) {
         int data_read = esp_http_client_read(client, ota_write_data, BUFFSIZE);
         int http_status = esp_http_client_get_status_code(client);
-        ESP_LOGI(TAG, "data_read=%d", data_read);
-        ESP_LOGI(TAG, "http_status=%d", http_status);
+        // ESP_LOGI(TAG, "data_read=%d", data_read);
+        // ESP_LOGI(TAG, "http_status=%d", http_status);
         if (http_status == 302) {
             // リダイレクト
             esp_http_client_set_redirection(client);
@@ -289,7 +289,7 @@ void Application::checkOTA(void* arg) {
                             ESP_LOGW(TAG, "The firmware has been rolled back to the previous version.");
                             esp_http_client_close(client);
                             esp_http_client_cleanup(client);
-                            vTaskDelay(NULL);
+                            vTaskDelete(NULL);
                         }
                     }
 
@@ -297,7 +297,7 @@ void Application::checkOTA(void* arg) {
                         ESP_LOGW(TAG, "Current running version is the same as a new. We will not continue the update.");
                         esp_http_client_close(client);
                         esp_http_client_cleanup(client);
-                        vTaskDelay(NULL);
+                        vTaskDelete(NULL);
                     }
 
                     image_header_was_checked = true;
