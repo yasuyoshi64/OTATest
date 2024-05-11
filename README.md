@@ -1,3 +1,11 @@
+アップデート手順。
+
+1) version.txt のバーションを変更
+2) ビルド、ビルド後 build/OTATest.bin を release フォルダにコピー
+3) GitHubにプッシュ
+4) ESP32をリセットすればアップデートされます
+
+
 # _Sample project_
 
 (See the README.md file in the upper level 'examples' directory for more information about examples.)
