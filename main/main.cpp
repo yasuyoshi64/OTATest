@@ -342,6 +342,6 @@ extern "C" void app_main(void)
     while(1) {
         led_status = led_status == 0 ? 1 : 0;
         app.led(led_status);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(300 / portTICK_PERIOD_MS);
     }
 }

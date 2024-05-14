@@ -1,5 +1,7 @@
 アップデート手順。
 
+Flash 16MB版想定です。
+
 1) version.txt のバーションを変更
 2) ビルド、ビルド後 build/OTATest.bin を release フォルダにコピー
 3) GitHubにプッシュ
